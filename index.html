@@ -493,6 +493,157 @@
       display: none !important;
     }
 
+    #cameraDrift,
+    #cameraFrame,
+    #cameraZoom {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    #cameraZoom {
+      transform: translate3d(0, 0, 0) scale(1);
+      transform-origin: 0 0;
+      backface-visibility: hidden;
+    }
+
+    body.zoom-style-smooth #cameraZoom {
+      transition: transform 1s ease-in-out;
+      will-change: transform;
+    }
+
+    body.smooth-zoomed {
+      overflow: hidden;
+    }
+
+    @keyframes slowDrift {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      32%  { transform: translate3d(5px, -4px, 0) scale(1.01); }
+      61%  { transform: translate3d(-4px, 5px, 0) scale(1.014); }
+      100% { transform: translate3d(0, 0, 0) scale(1); }
+    }
+
+    body.slow-drift-on #cameraDrift {
+      animation: slowDrift 32s ease-in-out infinite;
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+
+    .word.ink-unrevealed {
+      opacity: 0;
+      filter: blur(9px);
+      transform: translate3d(0, 3px, 0);
+    }
+
+    .word.ink-revealed {
+      opacity: 1;
+      filter: blur(0);
+      transform: translate3d(0, 0, 0);
+      transition:
+        opacity 0.7s ease,
+        filter 0.75s ease,
+        transform 0.7s ease;
+    }
+
+    .chunk.line-animating {
+      display: inline-block;
+      will-change: transform, opacity;
+    }
+
+    .chunk.line-exit-crossfade {
+      display: inline-block;
+      animation: lineExitCrossfade 0.7s ease-in-out both;
+    }
+    .chunk.line-enter-crossfade {
+      display: inline-block;
+      animation: lineEnterCrossfade 0.7s ease-in-out both;
+    }
+    @keyframes lineExitCrossfade {
+      from { opacity: 1; }
+      to { opacity: 0.18; }
+    }
+    @keyframes lineEnterCrossfade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .chunk.line-exit-slide {
+      display: inline-block;
+      animation: lineExitSlide 0.75s ease-in-out both;
+    }
+    .chunk.line-enter-slide {
+      display: inline-block;
+      animation: lineEnterSlide 0.75s ease-in-out both;
+    }
+    @keyframes lineExitSlide {
+      from { transform: translate3d(0, 0, 0); opacity: 1; }
+      to { transform: translate3d(0, calc(var(--line-dir, 1) * -30px), 0); opacity: 0.12; }
+    }
+    @keyframes lineEnterSlide {
+      from { transform: translate3d(0, calc(var(--line-dir, 1) * 30px), 0); opacity: 0; }
+      to { transform: translate3d(0, 0, 0); opacity: 1; }
+    }
+
+    .chunk.line-exit-recede {
+      display: inline-block;
+      animation: lineExitRecede 0.8s ease-in-out both;
+    }
+    .chunk.line-enter-recede {
+      display: inline-block;
+      animation: lineEnterRecede 0.8s ease-in-out both;
+    }
+    @keyframes lineExitRecede {
+      from { transform: scale(1); opacity: 1; }
+      to { transform: scale(0.92); opacity: 0.12; }
+    }
+    @keyframes lineEnterRecede {
+      from { transform: scale(1.08); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    #titleCard {
+      position: fixed;
+      inset: 0;
+      z-index: 55;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.82);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.85s ease;
+    }
+    #titleCard.is-on {
+      opacity: 1;
+    }
+    #titleCard .title-card-inner {
+      transform: translate3d(0, 8px, 0) scale(0.97);
+      opacity: 0;
+      transition: transform 0.85s ease, opacity 0.85s ease;
+      text-align: center;
+      padding: 2rem 1.5rem;
+      max-width: 52rem;
+    }
+    #titleCard.is-on .title-card-inner {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 1;
+    }
+    #titleCardText {
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: clamp(1.7rem, 4.6vw, 3.4rem);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      line-height: 1.25;
+      color: #f4f4f5;
+    }
+    body.theme-daylight #titleCard {
+      background: rgba(245, 239, 230, 0.94);
+    }
+    body.theme-daylight #titleCardText {
+      color: #1c1917;
+    }
+
     html {
       background-color: var(--bg-stage);
     }
@@ -657,14 +808,20 @@
   </div>
 
   <!-- Main Kinetic Reading Stage -->
-  <main id="stageContainer" class="flex-1 w-full max-w-3xl mx-auto px-6 sm:px-10 pt-20 pb-48 relative z-10 transition-all duration-300">
-    <div id="stageTitleBanner" class="mb-10 pb-4 border-b border-white/10 flex flex-wrap items-baseline justify-between gap-2">
-      <h2 id="stageStoryTitle" class="text-xs sm:text-sm font-bold uppercase tracking-[0.22em] text-amber-300/85">The Dead Below</h2>
+  <div id="cameraDrift">
+    <div id="cameraFrame">
+      <div id="cameraZoom">
+        <main id="stageContainer" class="flex-1 w-full max-w-3xl mx-auto px-6 sm:px-10 pt-20 pb-48 relative z-10 transition-all duration-300">
+          <div id="stageTitleBanner" class="mb-10 pb-4 border-b border-white/10 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="stageStoryTitle" class="text-xs sm:text-sm font-bold uppercase tracking-[0.22em] text-amber-300/85">The Dead Below</h2>
+          </div>
+          <article id="readerStage" class="space-y-7 text-xl sm:text-2xl md:text-[1.7rem] leading-[1.75] tracking-[-0.01em]">
+            <!-- Chunks rendered dynamically -->
+          </article>
+        </main>
+      </div>
     </div>
-    <article id="readerStage" class="space-y-7 text-xl sm:text-2xl md:text-[1.7rem] leading-[1.75] tracking-[-0.01em]">
-      <!-- Chunks rendered dynamically -->
-    </article>
-  </main>
+  </div>
 
   <!-- Collapse/Expand Tab when Bottom HUD is collapsed -->
   <button id="hudCollapseTab" class="chrome-extra fixed bottom-2 left-1/2 -translate-x-1/2 z-30 px-3 py-1 rounded-full text-[11px] font-semibold bg-zinc-900/90 text-zinc-300 border border-white/15 shadow-lg hover:bg-zinc-800 transition cursor-pointer hidden">
@@ -688,8 +845,26 @@
 
         <div class="chrome-extra h-4 w-px bg-white/15 mx-0.5 hidden sm:block"></div>
 
-        <button id="zoomHudBtn" data-action="zoom" class="chrome-extra hud-btn px-2 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/15 border border-white/10 transition cursor-pointer" title="Cycle Zoom 1 (Pop) → Zoom 2 (Screen) → Zoom 3 (Macro) → Off">
+        <button id="zoomHudBtn" data-action="zoom" class="chrome-extra hud-btn px-2 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/15 border border-white/10 transition cursor-pointer" title="Cycle Zoom 1 → Zoom 2 → Zoom 3 → Off (Z)">
           <span class="font-mono-hud text-amber-300 mr-1">Z</span>Zoom
+        </button>
+        <button id="zoomStyleBtn" class="chrome-extra px-2 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/15 border border-white/10 transition cursor-pointer" title="Zoom style, Pop or Smooth (Shift+Z)">
+          Zoom: Pop
+        </button>
+        <button id="typePaceBtn" class="chrome-extra px-2 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/15 border border-white/10 transition cursor-pointer" title="Typewriter speed ([ or ])">
+          Type: Medium
+        </button>
+        <button id="keyClickBtn" class="chrome-extra px-2 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/15 border border-white/10 transition cursor-pointer" title="Typewriter key-click (K)">
+          Click: Off
+        </button>
+        <button id="driftBtn" class="chrome-extra px-2 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/15 border border-white/10 transition cursor-pointer" title="Slow camera drift (C)">
+          Drift: Off
+        </button>
+        <button id="lineMoveBtn" class="chrome-extra px-2 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/15 border border-white/10 transition cursor-pointer" title="Line-to-line transition (X)">
+          Move: None
+        </button>
+        <button id="titleCardsBtn" class="chrome-extra px-2 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/15 border border-white/10 transition cursor-pointer" title="Auto title cards (Shift+A). Press A for a card on this line.">
+          Cards: On
         </button>
         <button data-action="highlight" class="chrome-extra hud-btn px-2 py-1 rounded-lg text-xs font-medium bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/30 transition cursor-pointer" title="Sweep marker highlight (L) | Shift+L for speed">
           <span class="font-mono-hud text-amber-300 mr-1">L</span>Highlight
@@ -811,6 +986,12 @@
     <p class="text-[11px] tracking-wide text-zinc-500">HAC Studios</p>
   </footer>
 
+  <div id="titleCard" aria-hidden="true">
+    <div class="title-card-inner">
+      <p id="titleCardText"></p>
+    </div>
+  </div>
+
   <div id="cheatSheet" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4" role="dialog" aria-labelledby="cheatSheetTitle">
     <div class="w-full max-w-lg rounded-2xl bg-zinc-900 border border-white/15 shadow-2xl overflow-hidden text-zinc-100 max-h-[85vh] flex flex-col">
       <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
@@ -847,15 +1028,32 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
 
 "It wasn't the seal," Vance said quietly. "Something just knocked from the outside."`;
 
-    const REVEAL_MODES = ['none', 'fade', 'type', 'word-slow', 'blur', 'scramble'];
+    const REVEAL_MODES = ['none', 'fade', 'type', 'word-slow', 'typewriter', 'ink', 'blur', 'scramble'];
     const REVEAL_LABELS = {
       'none': 'All Visible',
       'fade': 'Slow Fade',
       'type': 'Type Reveal',
       'word-slow': 'Word-by-Word',
+      'typewriter': 'Typewriter',
+      'ink': 'Ink Bleed',
       'blur': 'Blur Focus',
       'scramble': 'Static Scramble'
     };
+
+    const TYPEWRITER_PACES = [
+      { key: 'slow', label: 'Slow', ms: 78 },
+      { key: 'medium', label: 'Medium', ms: 40 },
+      { key: 'fast', label: 'Fast', ms: 22 }
+    ];
+
+    const SMOOTH_SCALES = [1, 1.22, 1.55, 1.95];
+
+    const LINE_TRANSITIONS = [
+      { key: 'none', label: 'None' },
+      { key: 'crossfade', label: 'Crossfade' },
+      { key: 'slide', label: 'Slide up' },
+      { key: 'recede', label: 'Fade behind' }
+    ];
 
     const HL_SPEEDS = [
       { key: 'slow', label: 'Slow', duration: '2.2s' },
@@ -899,7 +1097,16 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
       splitMode: 'sentence',
       modalOpen: false,
       cheatOpen: false,
-      restoring: false
+      restoring: false,
+      zoomStyle: 'pop',
+      typewriterPaceIndex: 1,
+      keyClickEnabled: false,
+      slowDrift: false,
+      lineTransition: 'none',
+      titleCardsAuto: true,
+      camScale: 1,
+      camTx: 0,
+      camTy: 0
     };
 
     const stageEl = document.getElementById('readerStage');
@@ -956,7 +1163,13 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
         idleTenseEnabled: state.idleTenseEnabled,
         uiMode: state.uiMode,
         hudCollapsed: state.hudCollapsed,
-        speakerVisible: state.speakerVisible
+        speakerVisible: state.speakerVisible,
+        zoomStyle: state.zoomStyle,
+        typewriterPaceIndex: state.typewriterPaceIndex,
+        keyClickEnabled: state.keyClickEnabled,
+        slowDrift: state.slowDrift,
+        lineTransition: state.lineTransition,
+        titleCardsAuto: state.titleCardsAuto
       };
     }
 
@@ -1023,6 +1236,7 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
       revealTimers = [];
       stageEl.querySelectorAll('.word[data-original]').forEach(w => {
         w.textContent = w.dataset.original;
+        w.classList.remove('ink-unrevealed', 'ink-revealed');
       });
     }
 
@@ -1144,6 +1358,7 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
       applyStageZoomClasses(false);
       renderStage();
       updateSpeakerBadge(getActiveChunkText());
+      hideTitleCard();
       scheduleSave(true);
     }
 
@@ -1223,9 +1438,56 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
       }
     }
 
+    const cameraZoom = document.getElementById('cameraZoom');
+    const cameraFrame = document.getElementById('cameraFrame');
+
+    function getCameraLayoutOrigin() {
+      const frame = cameraFrame.getBoundingClientRect();
+      return { x: frame.left + cameraZoom.offsetLeft, y: frame.top + cameraZoom.offsetTop };
+    }
+
+    function getLineLocalCenter(el) {
+      const er = el.getBoundingClientRect();
+      const layout = getCameraLayoutOrigin();
+      const scale = state.camScale || 1;
+      const vx = er.left + er.width / 2;
+      const vy = er.top + er.height / 2;
+      return {
+        localX: (vx - layout.x - state.camTx) / scale,
+        localY: (vy - layout.y - state.camTy) / scale
+      };
+    }
+
+    function setCameraTransform(scale, tx, ty) {
+      state.camScale = scale;
+      state.camTx = tx;
+      state.camTy = ty;
+      cameraZoom.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scale})`;
+    }
+
+    function applySmoothCamera() {
+      if (state.zoomStyle !== 'smooth' || state.stageZoom === 0) {
+        setCameraTransform(1, 0, 0);
+        document.body.classList.remove('smooth-zoomed');
+        return;
+      }
+      const el = stageEl.querySelector(`.chunk[data-index="${state.activeIndex}"]`);
+      const scale = SMOOTH_SCALES[state.stageZoom] || 1;
+      if (!el) {
+        setCameraTransform(scale, state.camTx, state.camTy);
+        return;
+      }
+      document.body.classList.add('smooth-zoomed');
+      const { localX, localY } = getLineLocalCenter(el);
+      const layout = getCameraLayoutOrigin();
+      const tx = (window.innerWidth / 2) - layout.x - localX * scale;
+      const ty = (window.innerHeight / 2) - layout.y - localY * scale;
+      setCameraTransform(scale, tx, ty);
+    }
+
     function applyStageZoomClasses(animateEntry) {
       document.body.classList.remove('stage-zoom-2', 'stage-zoom-3', 'stage-zoom-entering');
-      if (state.stageZoom === 2 || state.stageZoom === 3) {
+      if (state.zoomStyle !== 'smooth' && (state.stageZoom === 2 || state.stageZoom === 3)) {
         if (animateEntry) {
           document.body.classList.add('stage-zoom-entering');
         }
@@ -1240,7 +1502,50 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
       }
       const labels = ['Zoom', 'Zoom 1', 'Zoom 2', 'Zoom 3'];
       zoomHudBtn.innerHTML = `<span class="font-mono-hud text-amber-300 mr-1">Z</span>${labels[state.stageZoom]}`;
+      if (state.zoomStyle === 'smooth') applySmoothCamera();
+      else {
+        setCameraTransform(1, 0, 0);
+        document.body.classList.remove('smooth-zoomed');
+      }
     }
+
+    function applyZoomStyle(style, announce) {
+      const next = style === 'smooth' ? 'smooth' : 'pop';
+      state.zoomStyle = next;
+      zoomStyleBtn.textContent = next === 'smooth' ? 'Zoom: Smooth' : 'Zoom: Pop';
+      if (next === 'smooth') {
+        document.body.classList.add('zoom-style-smooth');
+        const el = stageEl.querySelector(`.chunk[data-index="${state.activeIndex}"]`);
+        const fx = getChunkEffects(state.activeIndex);
+        fx.zoom = false;
+        if (el) applyFxClasses(el, fx);
+        applyStageZoomClasses(false);
+      } else {
+        if (state.stageZoom >= 1) {
+          const el = stageEl.querySelector(`.chunk[data-index="${state.activeIndex}"]`);
+          const fx = getChunkEffects(state.activeIndex);
+          fx.zoom = state.stageZoom === 1;
+          if (el) applyFxClasses(el, fx);
+        }
+        applyStageZoomClasses(false);
+        window.setTimeout(() => {
+          if (state.zoomStyle === 'pop') document.body.classList.remove('zoom-style-smooth');
+        }, 1000);
+      }
+      if (announce) showToast(next === 'smooth' ? 'ZOOM: SMOOTH' : 'ZOOM: POP');
+      scheduleSave(true);
+    }
+
+    function toggleZoomStyle() {
+      applyZoomStyle(state.zoomStyle === 'pop' ? 'smooth' : 'pop', true);
+    }
+
+    let zoomResizeTimer = null;
+    window.addEventListener('resize', () => {
+      if (state.zoomStyle !== 'smooth' || state.stageZoom === 0) return;
+      clearTimeout(zoomResizeTimer);
+      zoomResizeTimer = setTimeout(applySmoothCamera, 80);
+    });
 
     function applyHighlightSpeed(index, announce) {
       state.hlSpeedIndex = ((index % HL_SPEEDS.length) + HL_SPEEDS.length) % HL_SPEEDS.length;
@@ -1343,7 +1648,7 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
       clearRevealTimers();
       el.classList.remove('anim-reveal-fade', 'anim-reveal-blur');
       const words = el.querySelectorAll('.word');
-      words.forEach(w => w.classList.remove('word-unrevealed', 'word-revealed'));
+      words.forEach(w => w.classList.remove('word-unrevealed', 'word-revealed', 'ink-unrevealed', 'ink-revealed'));
 
       if (state.revealMode === 'fade') {
         void el.offsetWidth;
@@ -1361,6 +1666,17 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
           }, i * stepMs);
           revealTimers.push(timer);
         });
+      } else if (state.revealMode === 'typewriter') {
+        runTypewriterReveal(words);
+      } else if (state.revealMode === 'ink') {
+        words.forEach(w => w.classList.add('ink-unrevealed'));
+        words.forEach((w, i) => {
+          const timer = setTimeout(() => {
+            w.classList.remove('ink-unrevealed');
+            w.classList.add('ink-revealed');
+          }, i * 95);
+          revealTimers.push(timer);
+        });
       } else if (state.revealMode === 'scramble') {
         words.forEach((w, i) => {
           const orig = w.dataset.original || w.textContent;
@@ -1376,6 +1692,7 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
       if (state.totalChunks === 0) return;
       registerActivity();
       const clamped = Math.max(0, Math.min(state.totalChunks - 1, newIdx));
+      const fromIdx = state.activeIndex;
 
       const isNewlyRevealed = clamped > state.maxRevealedIndex;
       if (isNewlyRevealed) {
@@ -1388,18 +1705,30 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
       scrollToActive();
       updateSpeakerBadge(getActiveChunkText());
 
-      if (state.stageZoom >= 2) {
+      if (fromIdx !== clamped && !state.restoring) {
+        playLineTransition(fromIdx, clamped);
+      }
+
+      if (state.zoomStyle === 'smooth' && state.stageZoom >= 1) {
+        requestAnimationFrame(applySmoothCamera);
+      } else if (state.stageZoom >= 2) {
         applyStageZoomClasses(true);
       }
 
-      if (state.revealMode !== 'none' && (isNewlyRevealed || state.stageZoom >= 2)) {
+      if (state.revealMode !== 'none' && (isNewlyRevealed || state.stageZoom >= 2 || state.revealMode === 'typewriter' || state.revealMode === 'ink')) {
         runRevealAnimation(clamped);
+      }
+
+      if (!state.restoring && fromIdx !== clamped && state.titleCardsAuto) {
+        const text = getActiveChunkText();
+        if (isChapterHeading(text)) showTitleCard(text, false);
       }
       scheduleSave();
     }
 
     function scrollToActive() {
       if (state.stageZoom >= 2) return;
+      if (state.zoomStyle === 'smooth' && state.stageZoom >= 1) return;
       const activeEl = stageEl.querySelector(`.chunk[data-index="${state.activeIndex}"]`);
       if (activeEl) {
         activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1462,17 +1791,19 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
       const prevZoom = state.stageZoom;
       state.stageZoom = (state.stageZoom + 1) % 4;
       const fx = getChunkEffects(state.activeIndex);
-      fx.zoom = state.stageZoom === 1;
+      fx.zoom = state.zoomStyle !== 'smooth' && state.stageZoom === 1;
       const el = stageEl.querySelector(`.chunk[data-index="${state.activeIndex}"]`);
       if (el) applyFxClasses(el, fx);
 
-      const enteringSpotlight = prevZoom < 2 && state.stageZoom === 2;
+      const enteringSpotlight = state.zoomStyle !== 'smooth' && prevZoom < 2 && state.stageZoom === 2;
       applyStageZoomClasses(enteringSpotlight);
       if (state.stageZoom === 0) {
         scrollToActive();
       }
 
-      const toastLabels = ['ZOOM: OFF', 'ZOOM 1: POP OUT', 'ZOOM 2: SCREEN FOCUS', 'ZOOM 3: MACRO'];
+      const toastLabels = state.zoomStyle === 'smooth'
+        ? ['ZOOM: OFF', 'ZOOM 1: SMOOTH', 'ZOOM 2: SMOOTH', 'ZOOM 3: SMOOTH']
+        : ['ZOOM: OFF', 'ZOOM 1: POP OUT', 'ZOOM 2: SCREEN FOCUS', 'ZOOM 3: MACRO'];
       showToast(toastLabels[state.stageZoom]);
     }
 
@@ -1620,11 +1951,205 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
       }
     }
 
+    const TYPEWRITER_PACE_LABELS = TYPEWRITER_PACES; // alias for buttons
+
+    let typistAudioCtx = null;
+    function getTypistAudioCtx() {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      if (!typistAudioCtx || typistAudioCtx.state === 'closed') {
+        typistAudioCtx = new AC();
+      }
+      if (typistAudioCtx.state === 'suspended') typistAudioCtx.resume().catch(() => {});
+      return typistAudioCtx;
+    }
+
+    function playKeyClick() {
+      if (!state.keyClickEnabled) return;
+      try {
+        const ctx = getTypistAudioCtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const filter = ctx.createBiquadFilter();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = 720 + Math.random() * 280;
+        filter.type = 'highpass';
+        filter.frequency.value = 600;
+        const now = ctx.currentTime;
+        gain.gain.setValueAtTime(0.028, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.032);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.034);
+      } catch (_) { /* audio may be blocked */ }
+    }
+
+    function runTypewriterReveal(words) {
+      const pace = TYPEWRITER_PACES[state.typewriterPaceIndex] || TYPEWRITER_PACES[1];
+      const chars = [];
+      words.forEach(w => {
+        const orig = w.dataset.original || '';
+        w.textContent = '';
+        w.classList.add('word-revealed');
+        w.classList.remove('word-unrevealed');
+        for (let i = 0; i < orig.length; i++) chars.push({ w, ch: orig[i] });
+      });
+      let i = 0;
+      const tick = () => {
+        if (i >= chars.length) return;
+        const item = chars[i];
+        item.w.textContent += item.ch;
+        if (item.ch.trim()) playKeyClick();
+        i += 1;
+        revealTimers.push(setTimeout(tick, pace.ms));
+      };
+      tick();
+    }
+
+    function applyTypewriterPace(index, announce) {
+      const len = TYPEWRITER_PACES.length;
+      state.typewriterPaceIndex = ((index % len) + len) % len;
+      const spec = TYPEWRITER_PACES[state.typewriterPaceIndex];
+      typePaceBtn.textContent = `Type: ${spec.label}`;
+      if (announce) showToast(`TYPEWRITER: ${spec.label.toUpperCase()}`);
+      scheduleSave(true);
+    }
+
+    function bumpTypewriterPace(dir) {
+      applyTypewriterPace(state.typewriterPaceIndex + dir, true);
+    }
+
+    function applyKeyClick(on, announce) {
+      state.keyClickEnabled = !!on;
+      keyClickBtn.textContent = state.keyClickEnabled ? 'Click: On' : 'Click: Off';
+      if (state.keyClickEnabled) getTypistAudioCtx();
+      if (announce) showToast(state.keyClickEnabled ? 'KEY-CLICK: ON' : 'KEY-CLICK: OFF');
+      scheduleSave(true);
+    }
+
+    function toggleKeyClick() {
+      applyKeyClick(!state.keyClickEnabled, true);
+    }
+
+    function applySlowDrift(on, announce) {
+      state.slowDrift = !!on;
+      document.body.classList.toggle('slow-drift-on', state.slowDrift);
+      driftBtn.textContent = state.slowDrift ? 'Drift: On' : 'Drift: Off';
+      if (announce) showToast(state.slowDrift ? 'DRIFT: ON' : 'DRIFT: OFF');
+      scheduleSave(true);
+    }
+
+    function toggleSlowDrift() {
+      applySlowDrift(!state.slowDrift, true);
+    }
+
+    function applyLineTransition(key, announce) {
+      const found = LINE_TRANSITIONS.find(t => t.key === key) || LINE_TRANSITIONS[0];
+      state.lineTransition = found.key;
+      lineMoveBtn.textContent = `Move: ${found.label}`;
+      if (announce) showToast(`MOVE: ${found.label.toUpperCase()}`);
+      scheduleSave(true);
+    }
+
+    function cycleLineTransition() {
+      const idx = LINE_TRANSITIONS.findIndex(t => t.key === state.lineTransition);
+      const next = LINE_TRANSITIONS[(idx + 1) % LINE_TRANSITIONS.length];
+      applyLineTransition(next.key, true);
+    }
+
+    let lineAnimTimer = null;
+    function playLineTransition(fromIdx, toIdx) {
+      const style = state.lineTransition;
+      if (!style || style === 'none' || fromIdx === toIdx) return;
+      const fromEl = stageEl.querySelector(`.chunk[data-index="${fromIdx}"]`);
+      const toEl = stageEl.querySelector(`.chunk[data-index="${toIdx}"]`);
+      if (!fromEl || !toEl) return;
+      const dir = toIdx > fromIdx ? 1 : -1;
+      const classes = ['line-animating',
+        'line-exit-crossfade', 'line-enter-crossfade',
+        'line-exit-slide', 'line-enter-slide',
+        'line-exit-recede', 'line-enter-recede'];
+      stageEl.querySelectorAll('.chunk').forEach(el => el.classList.remove(...classes));
+      fromEl.style.setProperty('--line-dir', String(dir));
+      toEl.style.setProperty('--line-dir', String(dir));
+      fromEl.classList.add('line-animating', 'line-exit-' + style);
+      toEl.classList.add('line-animating', 'line-enter-' + style);
+      clearTimeout(lineAnimTimer);
+      lineAnimTimer = setTimeout(() => {
+        fromEl.classList.remove('line-animating', 'line-exit-' + style);
+        toEl.classList.remove('line-animating', 'line-enter-' + style);
+      }, 850);
+    }
+
+    function isChapterHeading(text) {
+      if (!text) return false;
+      const t = text.trim();
+      if (/^#{1,6}\s+\S/.test(t)) return true;
+      if (/^(chapter|part)\b/i.test(t)) return true;
+      if (/^(\d+|[ivxlcdm]+)\.\s+\S/i.test(t)) return true;
+      return false;
+    }
+
+    function headingDisplayText(text) {
+      return String(text || '').trim().replace(/^#{1,6}\s+/, '').trim();
+    }
+
+    let titleCardTimer = null;
+    function hideTitleCard() {
+      const card = document.getElementById('titleCard');
+      card.classList.remove('is-on');
+      card.setAttribute('aria-hidden', 'true');
+    }
+
+    function showTitleCard(text, force) {
+      const display = headingDisplayText(text);
+      if (!display) return;
+      if (!force && !state.titleCardsAuto) return;
+      const card = document.getElementById('titleCard');
+      const label = document.getElementById('titleCardText');
+      label.textContent = display;
+      card.classList.add('is-on');
+      card.setAttribute('aria-hidden', 'false');
+      clearTimeout(titleCardTimer);
+      titleCardTimer = setTimeout(() => {
+        hideTitleCard();
+      }, 850 + 2000 + 50);
+    }
+
+    function applyTitleCardsAuto(on, announce) {
+      state.titleCardsAuto = !!on;
+      titleCardsBtn.textContent = state.titleCardsAuto ? 'Cards: On' : 'Cards: Off';
+      if (announce) showToast(state.titleCardsAuto ? 'TITLE CARDS: AUTO' : 'TITLE CARDS: OFF');
+      scheduleSave(true);
+    }
+
+    function toggleTitleCardsAuto() {
+      applyTitleCardsAuto(!state.titleCardsAuto, true);
+    }
+
+    const zoomStyleBtn = document.getElementById('zoomStyleBtn');
+    const typePaceBtn = document.getElementById('typePaceBtn');
+    const keyClickBtn = document.getElementById('keyClickBtn');
+    const driftBtn = document.getElementById('driftBtn');
+    const lineMoveBtn = document.getElementById('lineMoveBtn');
+    const titleCardsBtn = document.getElementById('titleCardsBtn');
+
+    zoomStyleBtn.addEventListener('click', toggleZoomStyle);
+    typePaceBtn.addEventListener('click', () => bumpTypewriterPace(1));
+    keyClickBtn.addEventListener('click', toggleKeyClick);
+    driftBtn.addEventListener('click', toggleSlowDrift);
+    lineMoveBtn.addEventListener('click', cycleLineTransition);
+    titleCardsBtn.addEventListener('click', toggleTitleCardsAuto);
+
     const HOTKEYS = [
       { keys: 'Space, →, ↓', action: 'Next line' },
       { keys: '←, ↑', action: 'Previous line' },
       { keys: 'Q', action: 'Open the editor' },
       { keys: 'Z', action: 'Cycle zoom' },
+      { keys: 'Shift+Z', action: 'Zoom style, Pop or Smooth' },
       { keys: 'L', action: 'Highlight' },
       { keys: 'Shift+L', action: 'Highlight speed' },
       { keys: 'S', action: 'Shake' },
@@ -1641,6 +2166,12 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
       { keys: 'R', action: 'Reset this line' },
       { keys: 'Shift+R', action: 'Reset all' },
       { keys: 'V', action: 'Cycle reveal' },
+      { keys: '[ / ]', action: 'Typewriter speed' },
+      { keys: 'K', action: 'Typewriter key-click' },
+      { keys: 'C', action: 'Slow camera drift' },
+      { keys: 'X', action: 'Line transition' },
+      { keys: 'A', action: 'Title card for this line' },
+      { keys: 'Shift+A', action: 'Auto title cards' },
       { keys: 'D', action: 'Stage menu' },
       { keys: 'I', action: 'Idle tension' },
       { keys: 'H', action: 'Clean mode' },
@@ -1729,7 +2260,8 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
         openModal();
       } else if (key === 'z') {
         e.preventDefault();
-        handleAction('zoom');
+        if (e.shiftKey) toggleZoomStyle();
+        else handleAction('zoom');
       } else if (key === 'l') {
         e.preventDefault();
         if (e.shiftKey) {
@@ -1796,6 +2328,22 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
       } else if (key === 'i') {
         e.preventDefault();
         toggleIdleTense();
+      } else if (key === 'k') {
+        e.preventDefault();
+        toggleKeyClick();
+      } else if (key === 'c') {
+        e.preventDefault();
+        toggleSlowDrift();
+      } else if (key === 'x') {
+        e.preventDefault();
+        cycleLineTransition();
+      } else if (key === 'a') {
+        e.preventDefault();
+        if (e.shiftKey) toggleTitleCardsAuto();
+        else showTitleCard(getActiveChunkText(), true);
+      } else if (e.key === '[' || e.key === ']') {
+        e.preventDefault();
+        bumpTypewriterPace(e.key === ']' ? 1 : -1);
       }
     });
 
@@ -2420,6 +2968,12 @@ Commander Vance didn't answer right away. He leaned closer to the cracked viewpo
         }
         applyIdleTenseEnabled(!!saved.idleTenseEnabled, false);
         applyUiMode(saved.uiMode || 'all');
+        applyZoomStyle(saved.zoomStyle === 'smooth' ? 'smooth' : 'pop', false);
+        if (Number.isInteger(saved.typewriterPaceIndex)) applyTypewriterPace(saved.typewriterPaceIndex, false);
+        applyKeyClick(!!saved.keyClickEnabled, false);
+        applySlowDrift(!!saved.slowDrift, false);
+        applyLineTransition(saved.lineTransition || 'none', false);
+        applyTitleCardsAuto(saved.titleCardsAuto !== false, false);
         if (saved.hudCollapsed) {
           state.hudCollapsed = true;
           document.body.classList.add('hud-collapsed');
